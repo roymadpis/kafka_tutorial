@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from confluent_kafka import Consumer, KafkaError, Producer
 import MyConsumer
 import MyProducer
@@ -45,17 +46,38 @@ class MyDriver():
     def flush_sorted_buffer(self):
         if not self.buffer:
             return
-
-        print(f"Sorting and flushing {len(self.buffer)} messages...")
-
+        
+        # Calculate unique sessions using a set comprehension
+        unique_sessions = {msg['session_id'] for msg in self.buffer}
+        num_sessions = len(unique_sessions)
+        print(f"📦 Sorting and flushing {len(self.buffer)} packets across {num_sessions} unique sessions...")
+       
         # Sort by session_id first, then by timestamp
         # Note: timestamp is a string from pyshark, ensure it's float-compatible
-        self.buffer.sort(key=lambda x: (x['session_id'], float(x['timestamp'])))
-
+        def parse_timestamp(ts_str):
+            # Example input: '2026-03-08T15:25:17.716457900Z'
+            # 1. Remove 'Z'
+            clean_ts = ts_str.replace('Z', '')
+            
+            # 2. Truncate nanoseconds to microseconds (6 digits after the dot)
+            # Most Python datetime parsers only handle up to 6 digits.
+            if '.' in clean_ts:
+                base, fraction = clean_ts.split('.')
+                clean_ts = f"{base}.{fraction[:6]}"
+            
+            # 3. Parse using strptime
+            return datetime.strptime(clean_ts, "%Y-%m-%dT%H:%M:%S.%f")
+        
+        # Sort by session_id, then by the parsed datetime object
+        self.buffer.sort(key=lambda x: (x['session_id'], parse_timestamp(x['timestamp'])))
+        # self.buffer.sort(key=lambda x: (x['session_id'], float(x['timestamp'])))
+        # print("Sorted buffer:")
+        # print(self.buffer)
+        
         for msg in self.buffer:
             payload = json.dumps(msg).encode('utf-8')
             # Use session_id as the key to ensure affinity in the new topic
-            self.my_producer.produce(
+            self.my_producer.producer.produce(
                 self.target_topic, 
                 key=msg['session_id'].encode('utf-8'), 
                 value=payload

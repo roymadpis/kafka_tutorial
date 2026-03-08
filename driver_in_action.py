@@ -40,25 +40,8 @@ if __name__ == '__main__':
                                   window_size_sec=window_size_sec_for_consumer_buffer)
     
     #################### TBDDD HERE I STOPEED
+    my_driver.process_and_sort()
     
     
     
-    
-    
-    consumer = MyConsumer.MyConsumer(bootstrap_servers=bootstrap_servers,
-                                     group_id=consumer_group_id)
-    
-    
-    consumer.subscribe([topic_name_packets_stream])
-    print(f"Waiting for messages in {topic_name_packets_stream}...")
-    
-    for message in consumer.consume_messages(timeout=2.0):
-        # Accessing your specific fields
-        print(f"Received message: {message}")   
-    
-    
-        ### step 1: create a topic - packets_stream1
-    CreateTopic.create_topic(bootstrap_servers = bootstrap_servers,
-                             topic_name = topic_name_packets_stream,
-                             num_partitions = 3, replication_factor=1)
     

@@ -3,5 +3,7 @@ topic_name_packets_stream: 'packets_stream3'
 key_field_in_messages: 'user_id'
 
 consumer_group_id: 'packets_consumer_group1'
+
+consumer_group_id_transformed_packets: 'transformed_packets_consumer_group1'
 topic_name_transformed_packets: 'transformed_packets0'
 window_size_sec_for_consumer_buffer : 5
