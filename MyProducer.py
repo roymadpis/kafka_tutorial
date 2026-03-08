@@ -15,7 +15,8 @@ class MyProducer:
             'linger.ms': 5 
         }
         self.producer = Producer(conf)
-
+        self.packet_id_counter = 0
+        
     def delivery_report(self, err, msg):
         """
         Callback triggered by poll() to report success or failure.
@@ -65,16 +66,20 @@ class MyProducer:
                               key = key, verbose=verbose)
  
  
-    def stream_live_packets(self, topic, packets_stream_interface:str = None):
+    def stream_live_packets(self, topic, packets_stream_interface:str = None,
+                            interface_id:str=None):
         """
         Captures packets from the interface and sends them to a Kafka topic.
         """
-        if not packets_stream_interface:
+        if not packets_stream_interface and not interface_id:
             raise ValueError(
                 "No network interface provided. Please specify an interface when initializing MyProducer. "
                 "Example: MyProducer(packets_stream_interface='Wi-Fi')"
             )
-        
+        if interface_id:
+            packets_stream_interface = interface_id
+            print(f"Using interface ID '{interface_id}' for packet capture.")
+            
         # Filter: Ignore traffic on port 9092 to prevent a feedback loop
         capture = pyshark.LiveCapture(
             interface=packets_stream_interface, 
@@ -86,7 +91,11 @@ class MyProducer:
         try:
             for packet in capture.sniff_continuously():
                 try:
+                # Increment the counter for every packet processed
+                    self.packet_id_counter += 1
+                    
                     packet_data = {
+                        'id': self.packet_id_counter,  # Added the ordered ID here
                         'timestamp': packet.sniff_timestamp,
                         'protocol': packet.highest_layer,
                         'length': int(packet.length),
@@ -94,7 +103,7 @@ class MyProducer:
                         'dst_ip': packet.ip.dst if hasattr(packet, 'ip') else "N/A",
                         'src_port': packet[packet.transport_layer].srcport if hasattr(packet, 'transport_layer') else None
                     }
-                    
+
                     self.send_message(topic, packet_data, key=packet_data['src_ip'])
                     
                 except AttributeError:

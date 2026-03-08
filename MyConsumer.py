@@ -90,7 +90,7 @@ if __name__ == "__main__":
     for message in consumer.consume_messages(timeout=2.0):
         # Accessing your specific fields
         print(f"Received message: {message}")   
-        user = message.get('user_id')
-        lucky_num = message.get('user_lucky_number')
-        color = message.get('favorite_color')
-        print(f"👤 {user} | 🎲 Lucky: {lucky_num} | 🎨 Color: {color}")
+        # user = message.get('user_id')
+        # lucky_num = message.get('user_lucky_number')
+        # color = message.get('favorite_color')
+        # print(f"👤 {user} | 🎲 Lucky: {lucky_num} | 🎨 Color: {color}")

@@ -1,2 +1,3 @@
 How to track all the packets from my Iphone: https://gemini.google.com/app/9bb66acabbf6b4d6
 
+ip.addr == 192.168.137.187
