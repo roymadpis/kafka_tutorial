@@ -43,7 +43,7 @@ class MyDriver():
             self.flush_sorted_buffer() # Final flush before exit
             self.close()
 
-    def flush_sorted_buffer(self):
+    def flush_sorted_buffer(self, process_func: callable = None):
         if not self.buffer:
             return
         
@@ -70,18 +70,31 @@ class MyDriver():
         
         # Sort by session_id, then by the parsed datetime object
         self.buffer.sort(key=lambda x: (x['session_id'], parse_timestamp(x['timestamp'])))
-        # self.buffer.sort(key=lambda x: (x['session_id'], float(x['timestamp'])))
-        # print("Sorted buffer:")
-        # print(self.buffer)
-        
-        for msg in self.buffer:
+
+        # 2. Apply the transformation function
+        # If no function is provided, we default to sending the raw buffer
+        if process_func:
+            results = process_func(self.buffer)
+        else:
+            results = self.buffer
+
+        # 3. Ensure results is a list so we can iterate
+        if isinstance(results, dict):
+            results = [results]
+
+        # 4. Produce the output
+        for msg in results:
             payload = json.dumps(msg).encode('utf-8')
-            # Use session_id as the key to ensure affinity in the new topic
+            # Use session_id if available, otherwise no key
+            key = msg.get('session_id', '').encode('utf-8') if 'session_id' in msg else None
+            
             self.my_producer.producer.produce(
                 self.target_topic, 
-                key=msg['session_id'].encode('utf-8'), 
+                key=key, 
                 value=payload
             )
         
         self.my_producer.flush()
         self.buffer.clear()
+        
+        
