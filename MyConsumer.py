@@ -1,7 +1,7 @@
 import json
 import yaml
 from confluent_kafka import Consumer, KafkaError
-
+import time
 # Load configurations from YAML file
 # with open('config.yaml', 'r') as config_file:
 #     config = yaml.safe_load(config_file)
@@ -71,14 +71,26 @@ if __name__ == "__main__":
     key_field_in_messages = config['key_field_in_messages']
         
     
-    consumer = MyConsumer(bootstrap_servers=bootstrap_servers, group_id='test-group-1')
-    consumer.subscribe([topic_name_packets_stream])
+    # consumer = MyConsumer(bootstrap_servers=bootstrap_servers, group_id='test-group-1')
+    # consumer.subscribe([topic_name_packets_stream])
+    # Use a unique group ID for testing to bypass old "bookmarks"
+    
+    unique_group = f"test-group-{int(time.time())}"
+    
+    print(f"Connecting to {config['bootstrap_servers']}...")
+    
+    consumer = MyConsumer(
+        bootstrap_servers=config['bootstrap_servers'], 
+        group_id=unique_group
+    )
+    consumer.subscribe([config['topic_name_packets_stream']])
 
-    print("Waiting for messages...")
-    for message in consumer.consume_messages(timeout=1.0):
+    print(f"Waiting for messages in {config['topic_name_packets_stream']}...")
+    
+    for message in consumer.consume_messages(timeout=2.0):
         # Accessing your specific fields
+        print(f"Received message: {message}")   
         user = message.get('user_id')
         lucky_num = message.get('user_lucky_number')
         color = message.get('favorite_color')
-        print(f"Received message: {message}")   
         print(f"👤 {user} | 🎲 Lucky: {lucky_num} | 🎨 Color: {color}")
