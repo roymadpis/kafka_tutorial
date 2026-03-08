@@ -32,8 +32,10 @@ if __name__ == '__main__':
     # Initialize
     producer = MyProducer.MyProducer(bootstrap_servers=bootstrap_servers)
     producer.stream_live_packets(topic=topic_name_packets_stream,
+                                 #packets_stream_interface='Adapter for loopback traffic capture',   #'LAN2',
                                  packets_stream_interface='LAN2',
-                                # interface_id="Device\NPF_{22AEB539-7748-4FFB-AA64-1C3A3DBCA7B1}",
+                              # interface_id=r'\Device\NPF_{EDEBF50D-5C30-4F2F-9569-BB727A12B97D}',
+                               # interface_id=r'\Device\NPF_{5D2399F7-B526-469D-8252-82201272FE86}',
                                 #key = key_field_in_messages,
                                   # verbose=True
                                 )

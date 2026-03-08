@@ -90,6 +90,12 @@ class MyProducer:
         
         try:
             for packet in capture.sniff_continuously():
+                #### let's consider only TCP packets:
+                
+                if 'TCP' not in packet:
+                    continue
+                # if not hasattr(packet, 'tcp'):
+                #     continue
                 try:
                 # Increment the counter for every packet processed
                     self.packet_id_counter += 1
@@ -99,9 +105,24 @@ class MyProducer:
                         'timestamp': packet.sniff_timestamp,
                         'protocol': packet.highest_layer,
                         'length': int(packet.length),
-                        'src_ip': packet.ip.src if hasattr(packet, 'ip') else "N/A",
-                        'dst_ip': packet.ip.dst if hasattr(packet, 'ip') else "N/A",
-                        'src_port': packet[packet.transport_layer].srcport if hasattr(packet, 'transport_layer') else None
+                        'tcp_payload_length': int(packet.tcp.len) if hasattr(packet.tcp, 'len') else 0,
+                        'src_ip': packet.ip.src,
+                        'dst_ip': packet.ip.dst,
+                        'src_port': packet.tcp.srcport,
+                        'dst_port': packet.tcp.dstport,
+                        'seq_num': packet.tcp.seq,
+                        'ack_num': packet.tcp.ack,
+                        'tcp_flags': packet.tcp.flags,
+                        'flag_syn': packet.tcp.flags_syn,
+                        'flag_ack': packet.tcp.flags_ack,
+                        'flag_fin': packet.tcp.flags_fin,
+                        'flag_rst': packet.tcp.flags_rst,
+                        'flag_psh': packet.tcp.flags_psh,
+                        'flag_urg': packet.tcp.flags_urg,
+                        
+                        'win_size': packet.tcp.window_size_value,
+                        'tcp_options': packet.tcp.options if hasattr(packet.tcp, 'options') else None,
+
                     }
 
                     self.send_message(topic, packet_data, key=packet_data['src_ip'])
