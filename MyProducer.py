@@ -96,6 +96,11 @@ class MyProducer:
                         'dst_ip': packet.ip.dst,
                         'src_port': packet.tcp.srcport,
                         'dst_port': packet.tcp.dstport,
+                        
+                        'seq_num': int(packet.tcp.seq) if hasattr(packet.tcp, 'seq') else None,
+                        'ack_num': int(packet.tcp.ack) if hasattr(packet.tcp, 'ack') else None,
+                        'tcp_payload_len': int(getattr(packet.tcp, 'len', 0)),
+                        
                         'tcp_flags': getattr(packet.tcp, 'flags', None),
                         'win_size': getattr(packet.tcp, 'window_size_value', None),
                     }

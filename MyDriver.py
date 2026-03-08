@@ -15,7 +15,7 @@ class MyDriver():
         self.my_producer = my_producer
         self.my_consumer = my_consumer
 
-    def process_and_sort(self):
+    def process_and_sort(self, process_func: callable = None):
         """
         Consumes messages, buffers them for X seconds, sorts, and publishes.
         """
@@ -31,16 +31,16 @@ class MyDriver():
                     # Check if the window has elapsed
                     current_time = time.time()
                     if current_time - self.last_flush_time >= self.window_size_sec:
-                        self.flush_sorted_buffer()
+                        self.flush_sorted_buffer(process_func=process_func)
                         self.last_flush_time = current_time
                 
                 # If consume_messages yields nothing (timeout), still check if we need to flush
                 if time.time() - self.last_flush_time >= self.window_size_sec:
-                    self.flush_sorted_buffer()
+                    self.flush_sorted_buffer(process_func=process_func)
                     self.last_flush_time = time.time()
 
         except KeyboardInterrupt:
-            self.flush_sorted_buffer() # Final flush before exit
+            self.flush_sorted_buffer(process_func=process_func) # Final flush before exit
             self.close()
 
     def flush_sorted_buffer(self, process_func: callable = None):
