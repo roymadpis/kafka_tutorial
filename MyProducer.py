@@ -4,7 +4,7 @@ from GenerateMessages import generate_list_messages
 import pyshark
 
 class MyProducer:
-    def __init__(self, bootstrap_servers='localhost:9092', client_id='python-producer', packets_stream_interface:str = None):
+    def __init__(self, bootstrap_servers='localhost:9092', client_id='python-producer'):
         """
         Initializes the Kafka Producer.
         """
@@ -65,24 +65,23 @@ class MyProducer:
                               key = key, verbose=verbose)
  
  
-    def stream_live_packets(self, topic):
+    def stream_live_packets(self, topic, packets_stream_interface:str = None):
         """
         Captures packets from the interface and sends them to a Kafka topic.
         """
-        if not self.packets_stream_interface:
+        if not packets_stream_interface:
             raise ValueError(
                 "No network interface provided. Please specify an interface when initializing MyProducer. "
                 "Example: MyProducer(packets_stream_interface='Wi-Fi')"
             )
         
-        interface = self.packets_stream_interface
         # Filter: Ignore traffic on port 9092 to prevent a feedback loop
         capture = pyshark.LiveCapture(
-            interface=interface, 
+            interface=packets_stream_interface, 
             display_filter='tcp.port != 9092'
         )
         
-        print(f"📡 Capturing on {interface}... Press Ctrl+C to stop.")
+        print(f"📡 Capturing on {packets_stream_interface}... Press Ctrl+C to stop.")
         
         try:
             for packet in capture.sniff_continuously():
