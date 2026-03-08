@@ -88,6 +88,7 @@ class MyProducer:
                     
                     packet_data = {
                         'id': self.packet_id_counter,
+                        'session_id': f"{packet.ip.src}:{packet.tcp.srcport}_{packet.ip.dst}:{packet.tcp.dstport}",
                         'timestamp': packet.sniff_timestamp,
                         'protocol': packet.highest_layer,
                         'length': int(packet.length),
