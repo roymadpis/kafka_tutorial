@@ -103,37 +103,6 @@ class MyProducer:
         except KeyboardInterrupt:
             self.flush()
 
- 
-            
-    def stream_packets(interface='חיבור מקומי- 2'):
-        # Replace 'Wi-Fi' with the name of your Hotspot interface
-        capture = pyshark.LiveCapture(interface=interface)
-        
-        print("Starting packet stream to Kafka...")
-        
-        for packet in capture.sniff_continuously():
-            try:
-                # Extract basic metadata for the dataset
-                packet_data = {
-                    'timestamp': packet.sniff_timestamp,
-                    'protocol': packet.highest_layer,
-                    'length': packet.length,
-                    'source': packet.ip.src if hasattr(packet, 'ip') else "N/A",
-                    'destination': packet.ip.dst if hasattr(packet, 'ip') else "N/A"
-                }
-                
-                # Produce to Kafka
-                producer.produce(
-                    topic, 
-                    key=packet_data['source'], 
-                    value=json.dumps(packet_data), 
-                    callback=delivery_report
-                )
-                producer.poll(0)
-                
-            except AttributeError:
-                # Skip packets without IP layers (like ARP)
-                continue
 
     def flush(self):
         """
