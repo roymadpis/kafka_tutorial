@@ -1,9 +1,10 @@
-### step 1:
-Run in the terminal: producer_sending_packets.py
-This runs the code that reads the packes from the phone and sends them to the topic configured in the config.yaml file
+### Step 1:
++ Run in the terminal: `producer_sending_packets.py`
+- This runs the code that reads the packes from the phone and sends them to the topic configured in the config.yaml file
 
 ### Step 2:
-Run in another terminal: driver_in_action.py
++ Run in another terminal: `driver_in_action.py`
+
 This runs the driver code:
 - Definnig a driver (consumer + producer)
 - The consumer reads the packets in the topic the producer (from step 1) is sending data to
@@ -14,5 +15,6 @@ This runs the driver code:
 - The topic is confifured in the config.yaml file: `topic_name_transformed_packets`
 
 ### Step 3:
-Run in another terminal: consumer_reading_transformed_packets.py
++ Run in another terminal: `consumer_reading_transformed_packets.py`
+
 - This runs a consumer that reads the transformed packets from the topic: `topic_name_transformed_packets`
