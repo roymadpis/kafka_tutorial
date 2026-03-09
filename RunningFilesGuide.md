@@ -1,3 +1,24 @@
+### Step 0 - Setup
+
+#### Part 1: Kafka server --> need to setup a kafka server
+- Need to create a `docker-compose.yaml` --> you can use chatGPT for that
+- Make sure you have the following lines:
+      # Broker configurations for single broker setup
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+- Run in the terminal: `docker compose up -d` => Runs containers in detached mode (in the background).
+
+#### Part 2: Route packets from iphone through PC 
+- To enable sniffing packets:
+- 1. go to services.msc --> services --> internet connection sharing --> right click --> restart
+- 2. Go to settings in your pc --> Network & Internet --> Mobile hotspot --> on (share over WIFI) --> connect to that hotspot through phone
+- 3. In iphone: connect to the PC hotspot
+
+#### That's it the setup is ready
+
+
 ### Step 1:
 + Run in the terminal: `producer_sending_packets.py`
 - This runs the code that reads the packes from the phone and sends them to the topic configured in the config.yaml file
