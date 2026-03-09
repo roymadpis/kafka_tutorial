@@ -15,21 +15,17 @@ class MyDriver():
         self.my_producer = my_producer
         self.my_consumer = my_consumer
 
-    def process_and_sort(self, process_func: callable = None):
+    def process_and_sort(self, process_func: callable = None, message_key='session_id'):
         """
         Consumes messages, buffers them for X seconds, sorts, and publishes.
         """
         self.my_consumer.subscribe([self.source_topic])
-        #print(f"🚀 Sorting service started. Window: {self.window_size_sec}s")
         # ----------------------------
-        # Calculate unique sessions
-        unique_sessions = {msg['session_id'] for msg in self.buffer}
-        num_sessions = len(unique_sessions)
         if process_func:
             func_name = process_func.__name__
-            print(f"🚀📦💡 Sorting and flushing {len(self.buffer)} packets across {num_sessions} unique sessions. Using function '{func_name}' to filter/aggregate the packets")
+            print(f"🚀📦💡 Sorting and flushing packets across unique sessions. Using function '{func_name}' to filter/aggregate the packets and using {message_key} as key")
         else:
-            print(f"🚀 Sorting and flushing {len(self.buffer)} packets across {num_sessions} unique sessions. No filtering/aggregation will be applied on the packets")
+            print(f"🚀📦 Sorting and flushing packets across unique sessions. No filtering/aggregation will be applied on the packets and using {message_key} as key")
         # ----------------------------
         try:
             while True:
@@ -40,19 +36,19 @@ class MyDriver():
                     # Check if the window has elapsed
                     current_time = time.time()
                     if current_time - self.last_flush_time >= self.window_size_sec:
-                        self.flush_sorted_buffer(process_func = process_func)
+                        self.flush_sorted_buffer(process_func = process_func, message_key=message_key)
                         self.last_flush_time = current_time
                 
                 # If consume_messages yields nothing (timeout), still check if we need to flush
                 if time.time() - self.last_flush_time >= self.window_size_sec:
-                    self.flush_sorted_buffer(process_func = process_func)
+                    self.flush_sorted_buffer(process_func = process_func, message_key=message_key)
                     self.last_flush_time = time.time()
 
         except KeyboardInterrupt:
-            self.flush_sorted_buffer(process_func = process_func) # Final flush before exit
+            self.flush_sorted_buffer(process_func = process_func, message_key=message_key) # Final flush before exit
             self.close()
 
-    def flush_sorted_buffer(self, process_func: callable = None):
+    def flush_sorted_buffer(self, process_func: callable = None, message_key='session_id'):
         if not self.buffer:
             return
         
@@ -80,7 +76,7 @@ class MyDriver():
         # Sort by session_id, then by the parsed datetime object
         self.buffer.sort(key=lambda x: (x['session_id'], parse_timestamp(x['timestamp'])))
 
-        # 2. Apply the transformation function
+        # Apply the transformation function
         # If no function is provided, we default to sending the raw buffer
         if process_func:
             results = process_func(self.buffer)
@@ -95,7 +91,7 @@ class MyDriver():
         for msg in results:
             payload = json.dumps(msg).encode('utf-8')
             # Use session_id if available, otherwise no key
-            key = msg.get('session_id', '').encode('utf-8') if 'session_id' in msg else None
+            key = msg.get(message_key, '').encode('utf-8') if message_key in msg else None
             
             self.my_producer.producer.produce(
                 self.target_topic, 

@@ -66,6 +66,12 @@ def summarize_by_session(packet_list):
         sessions[sid]["bytes"] += p['length']
     return list(sessions.values())
 
+
+def filter_small_packets(packet_list, size_threshold=500):
+    # Only keep packets that are larger than the threshold
+    return [p for p in packet_list if p['length'] > size_threshold]
+
+
 if __name__ == '__main__':
     print("Running the main code")
     
@@ -100,8 +106,9 @@ if __name__ == '__main__':
                                   target_topic = topic_name_transformed_packets,
                                   window_size_sec=window_size_sec_for_consumer_buffer)
     
-    #################### TBDDD HERE I STOPEED
-    my_driver.process_and_sort(process_func=aggregate_per_session)
+    #################### Running the driver with different processing functions ####################
+    my_driver.process_and_sort(process_func=aggregate_per_session, message_key='session_id')
+    # my_driver.process_and_sort(process_func=summarize_by_session, message_key='session_id')
     
     
     
