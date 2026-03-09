@@ -9,6 +9,7 @@
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
       KAFKA_MIN_INSYNC_REPLICAS: 1
 - Run in the terminal: `docker compose up -d` => Runs containers in detached mode (in the background).
+- run `docker ps` in the terminal to make sure the docker container is up and ready to use
 
 #### Part 2: Route packets from iphone through PC 
 - To enable sniffing packets:

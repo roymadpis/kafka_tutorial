@@ -20,8 +20,17 @@ class MyDriver():
         Consumes messages, buffers them for X seconds, sorts, and publishes.
         """
         self.my_consumer.subscribe([self.source_topic])
-        print(f"🚀 Sorting service started. Window: {self.window_size_sec}s")
-
+        #print(f"🚀 Sorting service started. Window: {self.window_size_sec}s")
+        # ----------------------------
+        # Calculate unique sessions
+        unique_sessions = {msg['session_id'] for msg in self.buffer}
+        num_sessions = len(unique_sessions)
+        if process_func:
+            func_name = process_func.__name__
+            print(f"🚀📦💡 Sorting and flushing {len(self.buffer)} packets across {num_sessions} unique sessions. Using function '{func_name}' to filter/aggregate the packets")
+        else:
+            print(f"🚀 Sorting and flushing {len(self.buffer)} packets across {num_sessions} unique sessions. No filtering/aggregation will be applied on the packets")
+        # ----------------------------
         try:
             while True:
                 # Use the generator from the base class
