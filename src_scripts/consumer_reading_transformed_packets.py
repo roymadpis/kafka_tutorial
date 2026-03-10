@@ -1,10 +1,20 @@
-import yaml
-import CreateTopic
-import MyProducer
-import MyConsumer
+import os
+import sys
 import time
+import yaml
 
-def log_message(message, log_path = "log.txt", verbose=True):
+# Add the parent directory of the current file to the system path to allow importing from src_code
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src_code import MyConsumer
+from src_code import CreateTopic
+from src_code import MyProducer
+
+def log_message(message, log_path = None, verbose=True):
+    if log_path is None:
+        # place logs in <repo_root>/logs/log_transformed_packets.txt
+        log_dir = "logs"
+        os.makedirs(log_dir, exist_ok=True)
+        log_path = os.path.join(log_dir, "log_transformed_packets.txt")
     
     if verbose:
         print(f"Received message: {message}")
@@ -40,7 +50,7 @@ if __name__ == '__main__':
     print(f"Waiting for messages in {topic_name_transformed_packets}...")
     
     for message in consumer.consume_messages(timeout=2.0):
-        log_message(message, log_path = "log_transformed_packets.txt", verbose=True)
+        log_message(message, log_path = 'logs/log_transformed_packets.txt', verbose=True)
         # Accessing your specific fields
         # print(f"Received message: {message}")   
     

@@ -1,9 +1,13 @@
-import CreateTopic
-import MyProducer
-import MyConsumer
+
 import time
 import yaml
-
+import os
+import sys
+# Add the parent directory of the current file to the system path to allow importing from src_code
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src_code import MyConsumer
+from src_code import CreateTopic
+from src_code import MyProducer
 
 if __name__ == '__main__':
     

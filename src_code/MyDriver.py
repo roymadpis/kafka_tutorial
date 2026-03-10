@@ -1,8 +1,6 @@
 import time
 from datetime import datetime
 from confluent_kafka import Consumer, KafkaError, Producer
-import MyConsumer
-import MyProducer
 import json
 
 class MyDriver():
@@ -67,11 +65,11 @@ class MyDriver():
             return
         #####################################################################
         # 1. Deduplication (Handling Retransmissions)
-        # We use a dictionary where the key is a unique identifier (session + seq)
+        # We use a dictionary where the key is a unique identifier (session + seq_num)
         # This automatically keeps only the latest version of a retransmitted packet.
         deduplicated_dict = {}
         for msg in self.buffer:
-            unique_id = (msg.get('session_id'), msg.get('seq'))
+            unique_id = (msg.get('session_id'), msg.get('seq_num'))
             # Logic: For every unique id (session_id + seq number) keep the first packet we saw
             if unique_id not in deduplicated_dict:
                 deduplicated_dict[unique_id] = msg
@@ -81,7 +79,7 @@ class MyDriver():
         ### sorting logic: per session id, we want to sort the packets by their seq number (if available) and then by their timestamp. This way, we can ensure that the packets are processed in the correct order
         clean_buffer.sort(key=lambda x: (
         x.get('session_id'), 
-        x.get('seq', 0),            # Primary Sort: Protocol Order
+        x.get('seq_num', 0),            # Primary Sort: Protocol Order
         parse_timestamp(x['timestamp'])  # Secondary Sort: Time Order
         ))
             

@@ -1,9 +1,14 @@
 import time
 import yaml
-import CreateTopic
-import MyProducer
-import MyConsumer
-import MyDriver
+import os
+import sys
+# Add the parent directory of the current file to the system path to allow importing from src_code
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src_code import MyConsumer
+from src_code import CreateTopic
+from src_code import MyProducer
+from src_code import MyDriver
+
 
 # Define "Reduction" Functions
 # we can create different strategies to reduce the number of packets we send each time through the producer
