@@ -1,5 +1,4 @@
 import CreateTopic
-import GenerateMessages
 import MyProducer
 import MyConsumer
 import time

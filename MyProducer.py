@@ -1,6 +1,5 @@
 import json
 from confluent_kafka import Producer
-from GenerateMessages import generate_list_messages
 import pyshark
 
 class MyProducer:
@@ -56,16 +55,6 @@ class MyProducer:
         except Exception as e:
             print(f"Error producing message: {e}")
 
-    def send_list_of_messages(self, topic, key, num_messages=10, verbose=False, **args):
-        """
-        Generates a list of messages using generate_list_messages and sends them to Kafka.
-        """
-        messages = generate_list_messages(num_messages, **args)
-        for message in messages:
-            self.send_message(topic = topic, message_dict = message,
-                              key = key, verbose=verbose)
- 
- 
     def stream_live_packets(self, topic, packets_stream_interface):
         # Filter: Ignore Kafka traffic and capture only IP/TCP
         capture = pyshark.LiveCapture(
@@ -75,7 +64,7 @@ class MyProducer:
             use_json=True
         )
         
-        print(f"📡 Capturing on {packets_stream_interface}... Press Ctrl+C to stop.")
+        print(f"Capturing on {packets_stream_interface}... Press Ctrl+C to stop.")
         
         try:
             for packet in capture.sniff_continuously():
