@@ -19,7 +19,7 @@ RUN apt-get update && \
 WORKDIR /app
 COPY . /app
 
-# Install Python deps from requirements.txt (created in the repo)
+# Install Python deps from requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Default envs (override in OCP)
