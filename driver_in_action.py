@@ -107,7 +107,8 @@ if __name__ == '__main__':
                                   window_size_sec=window_size_sec_for_consumer_buffer)
     
     #################### Running the driver with different processing functions ####################
-    my_driver.process_and_sort(process_func=aggregate_per_session, message_key='session_id')
+    my_driver.process_and_sort(process_func=None, message_key='session_id')
+    # my_driver.process_and_sort(process_func=aggregate_per_session, message_key='session_id')
     # my_driver.process_and_sort(process_func=summarize_by_session, message_key='session_id')
     
     

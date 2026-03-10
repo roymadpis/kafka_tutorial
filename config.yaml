@@ -6,4 +6,6 @@ consumer_group_id: 'packets_consumer_group1'
 
 consumer_group_id_transformed_packets: 'transformed_packets_consumer_group1'
 topic_name_transformed_packets: 'transformed_packets0'
-window_size_sec_for_consumer_buffer : 5 ### how many seconds the consumer will wait before flushing the buffer and sending the packets to the next topic. This is important for the sorting and aggregation of the packets across sessions. We can adjust it according to our needs and the traffic patterns we have. For example, if we have a lot of short sessions, we might want to set it to a lower value. If we have long sessions, we might want to set it to a higher value.
+window_size_sec_for_consumer_buffer : 10 ### how many seconds the consumer will wait before flushing the buffer and sending the packets to the next topic. This is important for the sorting and aggregation of the packets across sessions. We can adjust it according to our needs and the traffic patterns we have. For example, if we have a lot of short sessions, we might want to set it to a lower value. If we have long sessions, we might want to set it to a higher value.
+
+
