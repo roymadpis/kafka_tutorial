@@ -19,8 +19,6 @@
 - run in the terminal the following command to make sure the driver is working as expected:
       -  docker logs -f kafka_tutorial-packet-app-1
 
-
-
 #### Part 2: Route packets from iphone through PC 
 - To enable sniffing packets:
 - 1. go to services.msc --> services --> internet connection sharing --> right click --> restart
