@@ -6,7 +6,7 @@ services:
         - "9092:9092"
       environment:
         KAFKA_NODE_ID: 1
-        KAFKA_PROCESS_ROLES: 'broker,controller'
+        KAFKA_PROCESS_ROLES: 'broker,controller' # In KRaft, a node can be a Broker (handles data), a Controller (manages the cluster), or both. Here, this single node does both.
         KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
         
         KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:29093'
@@ -18,11 +18,26 @@ services:
         CLUSTER_ID: 'MkU3OEVBNTcwNTJDRkU2Qf' # A random unique ID for the cluster
         KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-
-  packet-app:
-    build: .
+  
+  producer-packets-app: ### suppose to run Dockerfile_producer_packets_app to run
+    build: 
+      context: .
+      dockerfile: Dockerfile_producer_packets_app
+    cap_add:
+      - NET_ADMIN # We need NET_ADMIN capability to allow the app to capture packets
+      - NET_RAW # We need NET_RAW capability to allow the app to capture packets
+    network_mode: "host" # We need to use host networking to allow the app to connect to Kafka on localhost
     depends_on:
       - kafka
     volumes:
       - ./k8s/config-map.yaml:/app/k8s/config-map.yaml
-      
+
+  packet-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+    volumes:
+      - ./k8s/config-map.yaml:/app/k8s/config-map.yaml
+      - .:/app 
