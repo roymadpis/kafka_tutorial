@@ -1,0 +1,24 @@
+# --- Binaries and Executables ---
+# Ignore the OpenShift CLI tool specifically
+oc.exe
+*.exe
+*.dll
+*.so
+
+# --- Build Outputs ---
+bin/
+obj/
+dist/
+build/
+out/
+
+# --- Environment & Secrets ---
+.env
+.env.local
+*.log
+secrets.yaml
+
+# --- IDE Folders ---
+.vscode/
+.idea/
+.DS_Store
