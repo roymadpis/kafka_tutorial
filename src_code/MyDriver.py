@@ -1,8 +1,6 @@
 import time
 from datetime import datetime
 from confluent_kafka import Consumer, KafkaError, Producer
-import MyConsumer
-import MyProducer
 import json
 
 class MyDriver():
@@ -38,11 +36,11 @@ class MyDriver():
                         print(f"!!!!!!! Consumer error: {msg.error()}")
                         
                 # Check if the window has elapsed --> this is the buffer logic
-                ### also check if the buffer is not empty, otherwise we might end up flushing empty buffers and sending empty messages to the next topic
+                ### also we need to check if the buffer is not empty, otherwise we might end up flushing empty buffers and sending empty messages to the next topic
                 current_time = time.time()
                 if current_time - self.last_flush_time >= self.window_size_sec and self.buffer:
                     self.flush_sorted_buffer(process_func = process_func, message_key=message_key)
-                    self.last_flush_time = current_time ### recet the last flush time       
+                    self.last_flush_time = current_time ### reset the last flush time       
                 
         except KeyboardInterrupt:
             print("\n -------> Stopping driver...")
@@ -67,54 +65,77 @@ class MyDriver():
             return
         #####################################################################
         # 1. Deduplication (Handling Retransmissions)
-        # We use a dictionary where the key is a unique identifier (session + seq)
-        # This automatically keeps only the latest version of a retransmitted packet.
+        # We use a dictionary where the key is a unique identifier (session + seq_num)
+        # This automatically keeps only the first version of a retransmitted packet.
         deduplicated_dict = {}
         for msg in self.buffer:
-            unique_id = (msg.get('session_id'), msg.get('seq'))
+            unique_id = (msg.get('session_id'), msg.get('seq_num'))
             # Logic: For every unique id (session_id + seq number) keep the first packet we saw
             if unique_id not in deduplicated_dict:
                 deduplicated_dict[unique_id] = msg
                 
-        # Convert back to list
+        # Convert back to list of messages (but cleaned - without retransmitted packets)
         clean_buffer = list(deduplicated_dict.values())
-        ### sorting logic: per session id, we want to sort the packets by their seq number (if available) and then by their timestamp. This way, we can ensure that the packets are processed in the correct order
+        ### 2. sorting logic: per session id, we want to sort the packets by their seq number (if available) and then by their timestamp. This way, we can ensure that the packets are processed in the correct order
         clean_buffer.sort(key=lambda x: (
         x.get('session_id'), 
-        x.get('seq', 0),            # Primary Sort: Protocol Order
-        parse_timestamp(x['timestamp'])  # Secondary Sort: Time Order
+        x.get('seq_num', 0),            # Primary Sort: Protocol Order
+        parse_timestamp(x['timestamp'])  # Secondary Sort: Time Order --> if seq number is not available
         ))
             
         
-        # Calculate unique sessions using a set comprehension
+        # Calculate number of unique sessions --> just for print purposes, otherwise we don't need this 
         unique_sessions = {msg['session_id'] for msg in clean_buffer}
         num_sessions = len(unique_sessions)
         print(f"Sorting and flushing {len(clean_buffer)} packets across {num_sessions} unique sessions...")
        
-        # Apply the transformation function
+        # 3. Apply a transformation function
         # If no function is provided, we default to sending the raw buffer
         if process_func:
             results = process_func(clean_buffer)
         else:
             results = clean_buffer
 
-        # 3. Ensure results is a list so we can iterate
+        # 4. Ensure results is a list so we can iterate (in the producer we iterate over a list of messages to send)
         if isinstance(results, dict):
             results = [results]
 
-        # 4. Produce the output
+        ##### 4. group together messages with the same message id (=> session id = 4 touple)
+        ## then "compress" all the messages with the same message id together into one message and send it to the next topic.
+        # This way, we can ensure that all the messages with the same message id are processed together and we can also reduce the number of messages sent to the next topic.
+        msg_dict_with_session_id_as_key = {}
         for msg in results:
-            payload = json.dumps(msg).encode('utf-8')
-            # Use session_id if available, otherwise no key
-            key = msg.get(message_key, '').encode('utf-8') if message_key in msg else None
+            msg_session_id = msg['session_id']
+            if msg_session_id not in msg_dict_with_session_id_as_key:
+                msg_dict_with_session_id_as_key[msg_session_id] = []
+            msg_dict_with_session_id_as_key[msg_session_id].append(msg)
+            
+        ### 5. now we have a dictionary where the key is the session id and
+        # the value is a list of messages with that session id
+        # We can then "compress" all the messages with the same session id together into
+        # one message and send it to the next topic.
+        
+        print(
+            f"\nIncoming number of packets: {len(clean_buffer)}. "
+            f"Number of unique sessions: {len(msg_dict_with_session_id_as_key)}. "
+            f"Sending {len(msg_dict_with_session_id_as_key)} compressed messages to next topic..."
+        )
+        
+        for msg_session_id, msgs_list in msg_dict_with_session_id_as_key.items():
+            compressed_msg = {
+                "session_id": msg_session_id,
+                "number_of_packets": len(msgs_list),
+                "messages": msgs_list ### Roy: TBD --> here we can apply another compression using a compression library function to reduce the total bytes
+            }
             
             self.my_producer.producer.produce(
-                self.target_topic, 
-                key=key, 
-                value=payload
+                self.target_topic,
+                key = compressed_msg['session_id'].encode('utf-8'),
+                value = json.dumps(compressed_msg).encode('utf-8')
             )
         self.my_producer.flush()
         clean_buffer.clear()
         self.buffer.clear()
+            
         
         

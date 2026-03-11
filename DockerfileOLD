@@ -1,0 +1,40 @@
+# Use a slim Python image
+FROM python:3.10-slim
+ENV PYTHONPATH="/app"
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      build-essential \
+      librdkafka-dev \
+      libsasl2-dev \
+      libssl-dev \
+      ca-certificates \
+      tshark \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy logic
+COPY src_code/ ./src_code/
+COPY src_scripts/ ./src_scripts/
+# COPY config.yaml .
+
+# Ensure src_code is visible to Python
+ENV PYTHONPATH=/app/src_code:$PYTHONPATH
+
+# OpenShift Permission Fix
+RUN chmod -R g+w /app
+
+# we use the command (the executable) and args (the script path) in the Kubernetes files.
+# This is the "Standard" way to handle multiple roles from one image.
+## .\oc start-build packet-pipeline --from-dir=. --follow
+
+## or:
+## docker build -t roymadpis/kafka-tutorial:latest .

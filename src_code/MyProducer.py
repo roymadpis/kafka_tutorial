@@ -21,9 +21,9 @@ class MyProducer:
         Callback triggered by poll() to report success or failure.
         """
         if err is not None:
-            print(f'❌ Delivery failed: {err}')
+            print(f'X --> Delivery failed: {err}')
         else:
-            print(f'✅ Delivered to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}')
+            print(f'✅ Delivered to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}. So far delivered {self.packet_id_counter} packets')
 
     def send_message(self, topic, message_dict, key=None, verbose=False):
         """
@@ -76,7 +76,7 @@ class MyProducer:
                     self.packet_id_counter += 1
                     
                     packet_data = {
-                        'id': self.packet_id_counter,
+                        'id_counter': self.packet_id_counter,
                         'session_id': f"{packet.ip.src}:{packet.tcp.srcport}_{packet.ip.dst}:{packet.tcp.dstport}",
                         'timestamp': packet.sniff_timestamp,
                         'protocol': packet.highest_layer,
@@ -93,9 +93,9 @@ class MyProducer:
                         'tcp_flags': getattr(packet.tcp, 'flags', None),
                         'win_size': getattr(packet.tcp, 'window_size_value', None),
                     }
-
-                    # Send with src_ip as key to maintain order per host
-                    self.send_message(topic, packet_data, key=packet_data['src_ip'])
+                    
+                    # Send with session_id as key
+                    self.send_message(topic, packet_data, key=packet_data['session_id'])
                     
                 except AttributeError:
                     # Skip packets with missing expected fields
