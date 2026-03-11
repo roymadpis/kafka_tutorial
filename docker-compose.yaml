@@ -19,10 +19,10 @@ services:
         KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
   
-  producer-packets-app: ### suppose to run Dockerfile_producer_packets_app to run
+  producer-packets-app: ### Use DockerfileProducerPacketsApp to build the image
     build: 
       context: .
-      dockerfile: Dockerfile_producer_packets_app
+      dockerfile: DockerfileProducerPacketsApp
     cap_add:
       - NET_ADMIN # We need NET_ADMIN capability to allow the app to capture packets
       - NET_RAW # We need NET_RAW capability to allow the app to capture packets
@@ -35,7 +35,7 @@ services:
   packet-app:
     build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: DockerfileDriverApp
     depends_on:
       - kafka
     volumes:

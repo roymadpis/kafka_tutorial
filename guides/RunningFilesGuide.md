@@ -1,8 +1,11 @@
 ### Step 0 - Setup
 
 #### Part 1: Kafka server --> need to setup a kafka server
-- Need to create a `docker-compose.yaml` --> you can use chatGPT for that
-- Make sure you have the following lines:
+- Need to create a `docker-compose.yaml`
+- The docker-compose.yaml defines the containers we want to build:
+      - 1. kafka server --> KRaft
+      - 2. Our application container: the one that will run `driver_in_action.py`- Make sure you have the following lines:
+
       # Broker configurations for single broker setup
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS: 1
@@ -11,7 +14,11 @@
 - Run in the terminal: `docker compose up -d` => Runs containers in detached mode (in the background).
 - run `docker ps` in the terminal to make sure the docker container is up and ready to use
 
-- docker network create kafka-net
+- run in the terminal the following command to make sure the producer container is working as expected:
+      -  docker logs -f kafka_tutorial-producer-packets-app-1
+- run in the terminal the following command to make sure the driver is working as expected:
+      -  docker logs -f kafka_tutorial-packet-app-1
+
 
 
 #### Part 2: Route packets from iphone through PC 
