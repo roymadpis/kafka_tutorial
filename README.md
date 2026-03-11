@@ -19,3 +19,6 @@
 - Docker and Docker Compose
 
 #### For more details and examples, open RunningFilesGuide.md in this repository.
+
+docker compose up --build
+docker logs -f kafka_tutorial-packet-app-1

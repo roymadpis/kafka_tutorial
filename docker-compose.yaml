@@ -1,9 +1,5 @@
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-
+### source: https://github.com/streamthoughts/kafka-monitoring-stack-docker-compose/blob/master/kraft-single-node-stack.yml
   kafka:
       image: confluentinc/cp-kafka:latest
       ports:
