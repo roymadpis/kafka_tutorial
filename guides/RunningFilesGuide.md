@@ -11,6 +11,9 @@
 - Run in the terminal: `docker compose up -d` => Runs containers in detached mode (in the background).
 - run `docker ps` in the terminal to make sure the docker container is up and ready to use
 
+- docker network create kafka-net
+
+
 #### Part 2: Route packets from iphone through PC 
 - To enable sniffing packets:
 - 1. go to services.msc --> services --> internet connection sharing --> right click --> restart
@@ -53,6 +56,15 @@
       - # 4. Apply your Apps
       kubectl apply -f k8s/producer-deployment.yaml
       kubectl apply -f k8s/consumer-deployment.yaml
+
+6. Verify the Traffic
+      - To see if your Producer is successfully sending messages to the Kafka server, you can check the logs:
+
+      - # Get the name of your producer pod
+      - kubectl get pods
+
+      - # View the logs
+      - kubectl logs -f <your-producer-pod-name>
 
 
 #### Part 3: Install oc CLI

@@ -24,8 +24,11 @@ COPY src_code/ ./src_code/
 COPY src_scripts/ ./src_scripts/
 COPY docker-compose.yaml .
 COPY k8s/ ./k8s/
+COPY helpers/utils.py ./helpers/utils.py
 ### Ensure src_code is visible to Python
+ENV PYTHONPATH="/app"
 ENV PYTHONPATH=/app/src_code:$PYTHONPATH
+ENV PYTHONUNBUFFERED=1
 
 ### OpenShift Permission Fix
 RUN chmod -R g+w /app

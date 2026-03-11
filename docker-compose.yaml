@@ -1,31 +1,32 @@
 services:
-  kafka:
-    image: apache/kafka:latest
-    container_name: kafka
-    ports:
-      - "9092:9092"
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
     environment:
-      # Roles: This node is both a broker and a controller
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:9093'
-      
-      # Listeners
-      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092'
-      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
-      
-      # Cluster ID (Required for KRaft)
-      KAFKA_CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
-      
-      # Broker configurations for single broker setup
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS: 1
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
-      KAFKA_MIN_INSYNC_REPLICAS: 1
-    volumes:
-      - kafka_data:/var/lib/kafka/data
+      ZOOKEEPER_CLIENT_PORT: 2181
 
-volumes:
-  kafka_data:
+  kafka:
+      image: confluentinc/cp-kafka:latest
+      ports:
+        - "9092:9092"
+      environment:
+        KAFKA_NODE_ID: 1
+        KAFKA_PROCESS_ROLES: 'broker,controller'
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+        
+        KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:29093'
+        KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9094,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+        KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9094,PLAINTEXT_HOST://localhost:9092'
+  
+        KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+        KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+        CLUSTER_ID: 'MkU3OEVBNTcwNTJDRkU2Qf' # A random unique ID for the cluster
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  packet-app:
+    build: .
+    depends_on:
+      - kafka
+    volumes:
+      - ./k8s/config-map.yaml:/app/k8s/config-map.yaml
+      

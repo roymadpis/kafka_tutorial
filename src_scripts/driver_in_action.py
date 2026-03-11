@@ -17,7 +17,7 @@ if __name__ == '__main__':
     ############################################## Variables ##############################################
     ### Load configurations from YAML file
     try:
-        with open('/app/config/config-map.yaml', 'r') as f: # if we run in kubernetes, the config map will be mounted at /app/config/config-map.yaml
+        with open('/app/k8s/config-map.yaml', 'r') as f: # if we run in kubernetes, the config map will be mounted at /app/config/config-map.yaml
             config_map = yaml.safe_load(f)
             config_data = config_map.get('data') 
             config_data = yaml.safe_load(config_data['config.yaml'])

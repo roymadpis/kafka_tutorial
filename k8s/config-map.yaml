@@ -6,8 +6,9 @@ metadata:
     app: packet-pipeline
 data:
   config.yaml: |
-    bootstrap_servers_local: localhost:9092
-    bootstrap_servers: "kafka-service:9092"
+    bootstrap_servers_local_old: "localhost:9092"
+    bootstrap_servers_local: "localhost:9092"
+    bootstrap_servers: "kafka:9094"
     source_topic: "raw_packets"
     consumer_group_id: "packet-consumer-group"
 
