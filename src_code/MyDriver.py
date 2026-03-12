@@ -100,7 +100,7 @@ class MyDriver():
         if isinstance(results, dict):
             results = [results]
 
-        ##### 4. group together messages with the same message id (=> session id = 4 touple)
+        ##### 5. group together messages with the same message id (=> session id = 4 touple)
         ## then "compress" all the messages with the same message id together into one message and send it to the next topic.
         # This way, we can ensure that all the messages with the same message id are processed together and we can also reduce the number of messages sent to the next topic.
         msg_dict_with_session_id_as_key = {}
@@ -110,7 +110,7 @@ class MyDriver():
                 msg_dict_with_session_id_as_key[msg_session_id] = []
             msg_dict_with_session_id_as_key[msg_session_id].append(msg)
             
-        ### 5. now we have a dictionary where the key is the session id and
+        ### 6. now we have a dictionary where the key is the session id and
         # the value is a list of messages with that session id
         # We can then "compress" all the messages with the same session id together into
         # one message and send it to the next topic.

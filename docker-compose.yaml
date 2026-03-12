@@ -20,7 +20,9 @@ services:
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
   packet-app:
-    build: .
+    build:
+        context: .
+        dockerfile: Dockerfile
     depends_on:
       - kafka
     volumes:
