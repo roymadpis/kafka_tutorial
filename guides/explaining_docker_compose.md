@@ -30,8 +30,21 @@
 ### Further explanation of how everything works together:
 - The secret lies in the `KAFKA_ADVERTISED_LISTENERS` setting. Here is exactly what is happening when we run the script locally.
 
-1. The "Two-Door" StrategyThink of your Kafka container as a room with two different doors.
-    - Door A (Port 9094): Faces inside the Docker "building"
-    - Door B (Port 9092): Faces outside to your Host Machine.When your Python script (running on your PC/Host) connects to localhost:9092, it enters through Door B.2. Which server is it sending to?Your script is sending to the Kafka container, but it is using the PLAINTEXT_HOST listener.In your docker-compose.yaml, look at this line:KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9094,PLAINTEXT_HOST://localhost:9092'When you run locally (on your PC): Your code connects to localhost:9092. Kafka says: "Ah, you're coming from the outside. Use the PLAINTEXT_HOST rules."When your packet-app runs (inside Docker): It connects to kafka:9094. Kafka says: "You're a fellow container. Use the internal PLAINTEXT rules."Both lead to the exact same Kafka engine and the exact same storage. The data isn't being "moved" between servers; it's being sent to the same process via different "addresses."3. How is it accessible in the container?Because Docker maps the ports. When you defined:YAMLports:
-  - "9092:9092"
-You told your computer: "Anything that hits my PC's port 9092 should be tunneled directly into the Kafka container's port 9092."Your Hotspot/Phone sends data $\rightarrow$ PC.producer_sending_packets.py (on PC) sends data $\rightarrow$ localhost:9092.Docker intercepts 9092 $\rightarrow$ forwards it into the Kafka Container.Kafka stores the message in its internal logs.packet-app (inside Docker) asks for data from kafka:9094.Kafka pulls that same message from its logs and hands it to the app.
+1. The "Two-Door" Strategy
+    - Think of your Kafka container as a room with two different doors.
+        - Door A (Port 9094): Faces inside the Docker "building"
+        - Door B (Port 9092): Faces outside to your Host Machine.
+    - When your Python script (running on your PC/Host) connects to localhost:9092, it enters through Door B.
+
+2. Which server is it sending to?Your script is sending to the Kafka container, but it is using the PLAINTEXT_HOST listener.
+    - In your docker-compose.yaml, look at this line: `KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9094,PLAINTEXT_HOST://localhost:9092'`
+    - When you run locally (on your PC): Your code connects to localhost:9092.
+    - Kafka says: "Ah, you're coming from the outside. Use the `PLAINTEXT_HOST` rules."
+    - When your packet-app runs (inside Docker): It connects to `kafka:9094`. Kafka says: "You're a fellow container. Use the internal PLAINTEXT rules."
+    - Both lead to the exact same Kafka engine and the exact same storage. The data isn't being "moved" between servers; it's being sent to the same process via different "addresses."
+
+3. How is it accessible in the container?
+    - Because Docker maps the ports.
+    - When you defined:YAMLports: "9092:9092"
+    - You told your computer: "Anything that hits my PC's port 9092 should be tunneled directly into the Kafka container's port 9092.
+    - "Your Hotspot/Phone sends data $\rightarrow$ PC.producer_sending_packets.py (on PC) sends data $\rightarrow$ localhost:9092.Docker intercepts 9092 $\rightarrow$ forwards it into the Kafka Container.Kafka stores the message in its internal logs.packet-app (inside Docker) asks for data from kafka:9094.Kafka pulls that same message from its logs and hands it to the app.
