@@ -3,20 +3,18 @@ services:
   kafka:
       image: confluentinc/cp-kafka:latest
       ports:
-        - "9092:9092"
+        - "9092:9092" # this maps the host machine's port 9092 to the container's port 9092 for external access
       environment:
         KAFKA_NODE_ID: 1
-        KAFKA_PROCESS_ROLES: 'broker,controller'
-        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
-        
-        KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:29093'
-        KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9094,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
-        KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9094,PLAINTEXT_HOST://localhost:9092'
-  
-        KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-        KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+        KAFKA_PROCESS_ROLES: 'broker,controller' # Tells this node to act as both a data broker and a metadata controller
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT' # Maps custom listener names to security protocols (PLAINTEXT = set to unencrypted security protocol)
+        KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:29093' # Identifies the controller nodes (Node 1) and their addresses for voting on cluster metadata
+        KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9094,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092' # Defines the interfaces and ports the Kafka process actually listens on inside the container --> Configures the listeners for the broker (PLAINTEXT for inter-broker communication and client connections, CONTROLLER for controller communication, PLAINTEXT_HOST for external access)
+        KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9094,PLAINTEXT_HOST://localhost:9092' # The addresses Kafka tells clients to use; 'kafka:9094' for internal Docker traffic and 'localhost:9092' for the host machine
+        KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER' # Specifies which listener is used for controller communication (CONTROLLER in this case)
+        KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT' # Specifies which listener is used for inter-broker communication (PLAINTEXT in this case)
         CLUSTER_ID: 'MkU3OEVBNTcwNTJDRkU2Qf' # A random unique ID for the cluster
-        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # Since this is a single-node cluster, we need to set the internal offset topic replication to 1 (usually defaults to 3)
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
   packet-app:
@@ -26,5 +24,5 @@ services:
     depends_on:
       - kafka
     volumes:
-      - ./k8s/config-map.yaml:/app/k8s/config-map.yaml
+      - ./k8s/config-map.yaml:/app/k8s/config-map.yaml # Mount the local config-map.yaml into the container at /app/k8s/config-map.yaml
       
