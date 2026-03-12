@@ -1,0 +1,8 @@
+How to track all the packets from my Iphone: https://gemini.google.com/app/9bb66acabbf6b4d6
+
+ip.addr == 192.168.137.187
+
+
+to enable sniffing packets:
+1. go to services.msc --> services --> internet connection sharing --> right click --> restart
+2. Go to settings in your pc --> Network & Internet --> Mobile hotspot --> on (share over WIFI) --> connect to that hotspot through phone

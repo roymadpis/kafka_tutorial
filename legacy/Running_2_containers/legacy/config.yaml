@@ -1,0 +1,11 @@
+bootstrap_servers: 'localhost:9092'
+topic_name_packets_stream: 'packets_stream3'
+key_field_in_messages: 'user_id'
+packets_stream_interface: 'LAN2' ### this is the name of the interface that will be used to capture the packets. You can find it in wireshark or in the output of "tshark -D" command. For example, it can be 'Wi-Fi' or 'Ethernet' or 'LAN2' or 'Adapter for loopback traffic capture' etc. Make sure to set it correctly according to our system and the traffic we want to capture.
+consumer_group_id: 'packets_consumer_group1' 
+
+consumer_group_id_transformed_packets: 'transformed_packets_consumer_group1'
+topic_name_transformed_packets: 'transformed_packets0'
+window_size_sec_for_consumer_buffer : 10 ### how many seconds the consumer will wait before flushing the buffer and sending the packets to the next topic. This is important for the sorting and aggregation of the packets across sessions. We can adjust it according to our needs and the traffic patterns we have. For example, if we have a lot of short sessions, we might want to set it to a lower value. If we have long sessions, we might want to set it to a higher value.
+
+
