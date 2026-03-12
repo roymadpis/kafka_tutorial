@@ -18,7 +18,10 @@ if __name__ == '__main__':
             config_map = yaml.safe_load(f)
             config_data = config_map.get('data') 
             config_data = yaml.safe_load(config_data['config.yaml'])
-            bootstrap_servers = config_data.get('bootstrap_servers')
+            #bootstrap_servers = config_data.get('bootstrap_servers')
+            bootstrap_servers = config_data.get('bootstrap_servers_local')
+            print("************************************************************************")
+            print(f"Bootstrap servers: {bootstrap_servers}")
 
     except:
         with open('k8s/config-map.yaml', 'r') as config_file: # if we run locally, the config map will be at k8s/config-map.yaml
@@ -26,12 +29,14 @@ if __name__ == '__main__':
             config_data = config_map.get('data') 
             config_data = yaml.safe_load(config_data['config.yaml'])
             bootstrap_servers = config_data.get('bootstrap_servers_local')
+            print(f"Bootstrap servers: {bootstrap_servers}")
 
     topic_name_packets_stream = config_data.get('source_topic')
     packets_stream_interface = config_data.get('packets_stream_interface')
     
     print(f"Running the producer that takes packets and send them to the kafka topic: {topic_name_packets_stream}")
-
+    print(f"Bootstrap servers: {bootstrap_servers}")
+    print(f"Packets stream interface: {packets_stream_interface}")
     ############################################## Topic - packets_stream1 ##############################################
     ### step 1: create a topic - packets_stream1
     CreateTopic.create_topic(bootstrap_servers = bootstrap_servers,

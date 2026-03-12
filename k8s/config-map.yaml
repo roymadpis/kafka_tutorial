@@ -10,11 +10,9 @@ data:
     bootstrap_servers: "kafka:9094"
     source_topic: "raw_packets"
     consumer_group_id: "packet-consumer-group"
-    chunk_size_producer: 20
 
     transformed_topic: "sorted_packets"
-    packets_stream_interface: "any"
-    packets_stream_interface_0ld: "LAN2"
+    packets_stream_interface: "LAN2"
     consumer_group_id_transformed_packets: "transformed_packets_consumer_group"
 
     window_size_sec: 10
