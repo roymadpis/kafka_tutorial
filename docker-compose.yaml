@@ -22,6 +22,6 @@ services:
         dockerfile: Dockerfile
     depends_on:
       - kafka
-    volumes:
-      - ./k8s/config-map.yaml:/app/k8s/config-map.yaml # Mount the local config-map.yaml into the container at /app/k8s/config-map.yaml
-      
+    # volumes:
+    #   - ./k8s/config-map.yaml:/app/k8s/config-map.yaml # Mount the local config-map.yaml into the container at /app/k8s/config-map.yaml
+  
