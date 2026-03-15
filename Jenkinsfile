@@ -18,7 +18,7 @@ pipeline {
                 echo 'Starting services with Docker Compose...'
                 // --build ensures your packet-app is re-compiled
                 // -d runs it in the background
-                sh 'docker-compose up -d --build'
+                sh 'docker compose up -d --build'
             }
         }
 
