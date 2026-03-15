@@ -22,7 +22,7 @@ RUN apt-get update && \
 ### Copy the source code into the container
 COPY src_code/ ./src_code/
 COPY config.yaml .
-COPY k8s/ ./k8s/
+# COPY k8s/ ./k8s/
 COPY helpers/utils.py ./helpers/utils.py
 ### Ensure src_code is visible to Python
 ENV PYTHONPATH="/app"
