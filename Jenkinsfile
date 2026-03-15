@@ -44,7 +44,7 @@ pipeline {
         always {
             echo 'Cleaning up containers...'
             // -v removes volumes so Kafka data doesn't persist between builds
-            sh 'docker-compose down -v'
+            // sh 'docker-compose down -v'
         }
         success {
             echo 'Build and Deployment successful!'
