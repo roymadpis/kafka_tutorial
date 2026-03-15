@@ -21,8 +21,7 @@ RUN apt-get update && \
 
 ### Copy the source code into the container
 COPY src_code/ ./src_code/
-COPY src_scripts/ ./src_scripts/
-COPY docker-compose.yaml .
+COPY config.yaml .
 COPY k8s/ ./k8s/
 COPY helpers/utils.py ./helpers/utils.py
 ### Ensure src_code is visible to Python
@@ -34,4 +33,4 @@ ENV PYTHONUNBUFFERED=1
 RUN chmod -R g+w /app
 
 ### Define the command to run the application when the container starts
-CMD ["python", "src_scripts/driver_in_action.py"]
+CMD ["python", "src_code/driver_in_action.py"]

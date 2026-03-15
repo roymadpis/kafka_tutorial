@@ -13,7 +13,7 @@ class MyDriver():
         self.my_producer = my_producer
         self.my_consumer = my_consumer
         
-    def process_and_sort(self, consumer_timeout:int = 1.0, process_func: callable = None, message_key='session_id'):
+    def process_and_sort(self, consumer_timeout:int = 1.0, process_func: callable = None, message_key='session_id', chunk_size=None):
         self.my_consumer.subscribe([self.source_topic])
         # Log initialization info
         mode = f"Using function '{process_func.__name__}'" if process_func else "No filtering/aggregation"
@@ -48,18 +48,22 @@ class MyDriver():
             self.my_consumer.close()
                 
 
-    def flush_sorted_buffer(self, process_func: callable = None, message_key='session_id'):
+    def flush_sorted_buffer(self, process_func: callable = None, message_key='session_id', chunk_size=None):
         # parsing timestamps in the format "2024-06-17T12:34:56.789Z" to datetime objects for accurate sorting
-        def parse_timestamp(ts_str):
-            clean_ts = ts_str.replace('Z', '')
-            
-            # Truncate nanoseconds to microseconds (6 digits after the dot)
-            if '.' in clean_ts:
-                base, fraction = clean_ts.split('.')
-                clean_ts = f"{base}.{fraction[:6]}"
-            
-            # Parse using strptime
-            return datetime.strptime(clean_ts, "%Y-%m-%dT%H:%M:%S.%f")
+        def parse_timestamp(ts_val):
+            try:
+                # 1. Try treating as a Unix Timestamp (float or int)
+                return datetime.fromtimestamp(float(ts_val))
+            except (ValueError, TypeError):
+                # 2. ISO string parsing if float conversion fails - This handles '2024-06-17T12:34:56.789Z'
+                clean_ts = str(ts_val).replace('Z', '')
+                
+                if '.' in clean_ts:
+                    base, fraction = clean_ts.split('.')
+                    clean_ts = f"{base}.{fraction[:6]}" # Truncate to microseconds
+                    
+                return datetime.strptime(clean_ts, "%Y-%m-%dT%H:%M:%S.%f")
+       
         
         if not self.buffer:
             return
@@ -83,6 +87,7 @@ class MyDriver():
         parse_timestamp(x['timestamp'])  # Secondary Sort: Time Order --> if seq number is not available
         ))
             
+        
         # Calculate number of unique sessions --> just for print purposes, otherwise we don't need this 
         unique_sessions = {msg['session_id'] for msg in clean_buffer}
         num_sessions = len(unique_sessions)
@@ -99,7 +104,7 @@ class MyDriver():
         if isinstance(results, dict):
             results = [results]
 
-        ##### 5. group together messages with the same message id (=> session id = 4 touple)
+        ##### 4. group together messages with the same message id (=> session id = 4 touple)
         ## then "compress" all the messages with the same message id together into one message and send it to the next topic.
         # This way, we can ensure that all the messages with the same message id are processed together and we can also reduce the number of messages sent to the next topic.
         msg_dict_with_session_id_as_key = {}
@@ -109,7 +114,7 @@ class MyDriver():
                 msg_dict_with_session_id_as_key[msg_session_id] = []
             msg_dict_with_session_id_as_key[msg_session_id].append(msg)
             
-        ### 6. now we have a dictionary where the key is the session id and
+        ### 5. now we have a dictionary where the key is the session id and
         # the value is a list of messages with that session id
         # We can then "compress" all the messages with the same session id together into
         # one message and send it to the next topic.
@@ -121,17 +126,27 @@ class MyDriver():
         )
         
         for msg_session_id, msgs_list in msg_dict_with_session_id_as_key.items():
-            compressed_msg = {
-                "session_id": msg_session_id,
-                "number_of_packets": len(msgs_list),
-                "messages": msgs_list ### Roy: TBD --> here we can apply another compression using a compression library function to reduce the total bytes
-            }
-            
-            self.my_producer.producer.produce(
-                self.target_topic,
-                key = compressed_msg['session_id'].encode('utf-8'),
-                value = json.dumps(compressed_msg).encode('utf-8')
-            )
+            # if no chunk size is provided, we group all the messages with the same session id together. Otherwise, we group the messages with the same session id into chunks of the given chunk size.
+            if not chunk_size:
+                chunks = [msgs_list]
+            else:
+                # split into sub-lists based on the chunk size
+                chunks = [msgs_list[i:i + chunk_size] for i in range(0, len(msgs_list), chunk_size)]
+            for idx, chunk in enumerate(chunks):
+                compressed_msg = {
+                    "session_id": msg_session_id,
+                    "chunk_index": idx,
+                    "is_last_chunk": idx == len(chunks) - 1,
+                    "chunk_size": len(chunk),
+                    "number_of_packets_in_session_id": len(msgs_list),
+                    "messages": chunk ### Roy: TBD --> here we can apply another compression using a compression library function to reduce the total bytes
+                }
+                
+                self.my_producer.producer.produce(
+                    self.target_topic,
+                    key = compressed_msg['session_id'].encode('utf-8'),
+                    value = json.dumps(compressed_msg).encode('utf-8')
+                )
         self.my_producer.flush()
         clean_buffer.clear()
         self.buffer.clear()

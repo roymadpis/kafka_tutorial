@@ -23,7 +23,7 @@ if __name__ == '__main__':
             bootstrap_servers = config_data.get('bootstrap_servers')
 
     except:
-        with open('k8s/config-map.yaml', 'r') as config_file: # if we run locally, the config map will be at k8s/config-map.yaml
+        with open('config.yaml', 'r') as config_file: # if we run locally, the config map will be at k8s/config-map.yaml
             config_map = yaml.safe_load(config_file)
             config_data = config_map.get('data') 
             config_data = yaml.safe_load(config_data['config.yaml'])
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     consumer_group_id_transformed_packets = config_data.get('consumer_group_id_transformed_packets')
     topic_name_transformed_packets = config_data.get('transformed_topic')
     window_size_sec_for_consumer_buffer = config_data.get('window_size_sec')
-    
+    chunk_size = config_data.get('chunk_size')
     
     ############################################# Topic - transformed packets ##############################################
     ### step 1: create a topic - transformed_packets
@@ -56,7 +56,7 @@ if __name__ == '__main__':
                                   window_size_sec=window_size_sec_for_consumer_buffer)
     
     #################### Running the driver with different processing functions ####################
-    my_driver.process_and_sort(process_func=None, message_key='session_id')
+    my_driver.process_and_sort(process_func=None, message_key='session_id', chunk_size=chunk_size)
     # my_driver.process_and_sort(process_func=utils.aggregate_per_session, message_key='session_id')
     # my_driver.process_and_sort(process_func=utils.summarize_by_session, message_key='session_id')
     
