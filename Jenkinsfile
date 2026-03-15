@@ -34,8 +34,8 @@ pipeline {
             steps {
                 echo 'Running integration tests or logs check...'
                 // Example: check if your packet-app is actually running
-                sh 'docker-compose ps'
-                sh 'docker-compose logs packet-app'
+                sh 'docker compose ps'
+                sh 'docker compose logs packet-app'
             }
         }
     }
