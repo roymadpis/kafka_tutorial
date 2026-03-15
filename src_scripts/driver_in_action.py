@@ -10,7 +10,6 @@ from src_code import MyProducer
 from src_code import MyDriver
 from helpers import utils
 
-
 if __name__ == '__main__':
     print("Running the main code")
     

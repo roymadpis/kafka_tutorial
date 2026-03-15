@@ -31,7 +31,6 @@ if __name__ == '__main__':
     packets_stream_interface = config_data.get('packets_stream_interface')
     
     print(f"Running the producer that takes packets and send them to the kafka topic: {topic_name_packets_stream}")
-
     ############################################## Topic - packets_stream1 ##############################################
     ### step 1: create a topic - packets_stream1
     CreateTopic.create_topic(bootstrap_servers = bootstrap_servers,

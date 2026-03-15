@@ -16,7 +16,6 @@ services:
         CLUSTER_ID: 'MkU3OEVBNTcwNTJDRkU2Qf' # A random unique ID for the cluster
         KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # Since this is a single-node cluster, we need to set the internal offset topic replication to 1 (usually defaults to 3)
         KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-
   packet-app:
     build:
         context: .
