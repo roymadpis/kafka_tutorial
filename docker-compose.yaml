@@ -24,4 +24,21 @@ services:
       - kafka
     volumes:
       - ./k8s/config-map.yaml:/app/k8s/config-map.yaml # Mount the local config-map.yaml into the container at /app/k8s/config-map.yaml
-      
+  
+  # The jenkins service "maps" the Docker engine of the actual computer into the Jenkins container.
+  # When Jenkins runs docker-compose up inside its pipeline, it's actually telling the computer's Docker to start those Kafka containers.
+  jenkins:
+    image: jenkins/jenkins:lts
+    privileged: true
+    user: root  # Necessary to access the docker socket
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      # --- ADD THE LINE HERE ---
+      - /var/run/docker.sock:/var/run/docker.sock
+      # -------------------------
+
+volumes:
+  jenkins_home:
