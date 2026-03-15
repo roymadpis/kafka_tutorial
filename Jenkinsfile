@@ -2,13 +2,14 @@ pipeline {
     agent any
 
     environment {
-        // We use a fixed name here to ensure that the same containers are reused across stages, and we can easily access them from the host machine.
+        // We use a fixed name inhere to ensure that the same contaniers are reused across stages,
+        // and we can easily access them from the host machine.
         COMPOSE_PROJECT_NAME = "kafka-tutorial-stack"
         APP_TAG = "v${env.BUILD_NUMBER}" 
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout-grab-code') {
             steps {
                 // Go to the repository I defined in the project settings, and download the code into this workspace
                 checkout scm
@@ -25,7 +26,7 @@ pipeline {
         }
 
 
-        stage('Build & Up') {
+        stage('Build & docker Up') {
             steps {
                 // This will build the Docker image for the driver and start both the Kafka and driver containers.
                 // This tells Docker to look for a file named docker-compose.yaml in the current directory.

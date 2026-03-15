@@ -75,3 +75,7 @@
       apt-get update && apt-get install -y docker-ce-cli
 
       - exit
+
+
++ closing the removing the containers:
+      - docker compose -p kafka-tutorial-stack down
