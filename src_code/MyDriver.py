@@ -83,7 +83,6 @@ class MyDriver():
         parse_timestamp(x['timestamp'])  # Secondary Sort: Time Order --> if seq number is not available
         ))
             
-        
         # Calculate number of unique sessions --> just for print purposes, otherwise we don't need this 
         unique_sessions = {msg['session_id'] for msg in clean_buffer}
         num_sessions = len(unique_sessions)

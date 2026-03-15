@@ -112,3 +112,4 @@ class MyProducer:
         """
         print("Cleaning up... flushing producer.")
         self.producer.flush()
+        
